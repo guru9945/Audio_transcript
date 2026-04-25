@@ -27,7 +27,7 @@ export default function LoginPage() {
         password,
       });
       if (error) {
-        setError(error.message);
+        setError(error.message || "An error occurred");
       } else {
         router.push("/");
         router.refresh();
@@ -39,7 +39,7 @@ export default function LoginPage() {
         name: email.split("@")[0],
       });
       if (error) {
-        setError(error.message);
+        setError(error.message || "An error occurred");
       } else {
         router.push("/");
         router.refresh();
