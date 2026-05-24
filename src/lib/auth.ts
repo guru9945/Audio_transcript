@@ -8,16 +8,22 @@ const localTrustedOrigins = [
     "http://192.168.153.1:3000",
 ];
 
+const isProduction = process.env.NODE_ENV === "production";
+const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
+const productionBaseURL = process.env.BETTER_AUTH_URL || vercelUrl;
 const productionTrustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
     ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
-    : undefined;
+    : productionBaseURL
+        ? [productionBaseURL]
+        : undefined;
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
-    ...(process.env.NODE_ENV !== "production" ? { trustedOrigins: localTrustedOrigins } : {}),
-    ...(process.env.NODE_ENV === "production" && productionTrustedOrigins ? { trustedOrigins: productionTrustedOrigins } : {}),
+    ...(isProduction && productionBaseURL ? { baseURL: productionBaseURL } : {}),
+    ...(isProduction && productionTrustedOrigins ? { trustedOrigins: productionTrustedOrigins } : {}),
+    ...(!isProduction ? { trustedOrigins: localTrustedOrigins } : {}),
     emailAndPassword: {
         enabled: true,
     },
