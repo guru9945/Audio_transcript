@@ -19,7 +19,7 @@ const productionTrustedOrigins = [
     vercelOrigin,
     betterAuthOrigin,
     "https://audio-transcript-iota.vercel.app",
-].filter(Boolean).reduce((unique, origin) => {
+].filter((origin): origin is string => Boolean(origin)).reduce((unique, origin) => {
     if (!unique.includes(origin)) unique.push(origin);
     return unique;
 }, [] as string[]);
