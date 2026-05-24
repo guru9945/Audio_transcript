@@ -23,8 +23,8 @@ export async function transcribeAudio(formData: FormData) {
       return { error: "No audio file provided" };
     }
 
-    if (file.size > 20 * 1024 * 1024) { // 20MB limit
-      return { error: "File too large. Please upload a short audio file." };
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      return { error: "File too large. Please upload a shorter audio file (max 5MB)." };
     }
 
     const arrayBuffer = await file.arrayBuffer();

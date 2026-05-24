@@ -10,6 +10,7 @@ export default function UploadForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const MAX_FILE_SIZE_MB = 5;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +69,16 @@ export default function UploadForm() {
             className="hidden"
             onChange={(e) => {
               const selected = e.target.files?.[0];
-              if (selected) setFile(selected);
+              if (selected) {
+                if (selected.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                  setError(`File too large. Please upload audio under ${MAX_FILE_SIZE_MB}MB.`);
+                  setFile(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                  return;
+                }
+                setError("");
+                setFile(selected);
+              }
             }}
           />
           {file ? (
@@ -89,7 +99,7 @@ export default function UploadForm() {
                 <UploadCloud className="h-8 w-8 text-gray-400" />
               </div>
               <p className="text-sm font-medium text-gray-300">Click to upload audio</p>
-              <p className="text-xs text-gray-500">MP3, WAV, M4A up to 20MB (&lt; 1 min)</p>
+              <p className="text-xs text-gray-500">MP3, WAV, M4A up to 5MB (&lt; 1 min)</p>
             </div>
           )}
         </div>
