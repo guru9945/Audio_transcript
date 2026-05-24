@@ -8,13 +8,16 @@ const localTrustedOrigins = [
     "http://192.168.153.1:3000",
 ];
 
+const productionTrustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
+    ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
+    : undefined;
+
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
-    trustedOrigins: process.env.NODE_ENV === "production"
-        ? [process.env.BETTER_AUTH_URL || "https://audiotranscript-production-ddc7.up.railway.app"]
-        : localTrustedOrigins,
+    ...(process.env.NODE_ENV !== "production" ? { trustedOrigins: localTrustedOrigins } : {}),
+    ...(process.env.NODE_ENV === "production" && productionTrustedOrigins ? { trustedOrigins: productionTrustedOrigins } : {}),
     emailAndPassword: {
         enabled: true,
     },
