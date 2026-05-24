@@ -9,20 +9,26 @@ const localTrustedOrigins = [
 ];
 
 const isProduction = process.env.NODE_ENV === "production";
-const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
-const productionBaseURL = process.env.BETTER_AUTH_URL || vercelUrl;
-const productionTrustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
+const vercelOrigin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
+const betterAuthOrigin = process.env.BETTER_AUTH_URL ? new URL(process.env.BETTER_AUTH_URL).origin : undefined;
+const explicitTrustedOrigins = process.env.BETTER_AUTH_TRUSTED_ORIGINS
     ? process.env.BETTER_AUTH_TRUSTED_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
-    : productionBaseURL
-        ? [productionBaseURL]
-        : undefined;
+    : [];
+const productionTrustedOrigins = [
+    ...explicitTrustedOrigins,
+    vercelOrigin,
+    betterAuthOrigin,
+    "https://audio-transcript-iota.vercel.app",
+].filter(Boolean).reduce((unique, origin) => {
+    if (!unique.includes(origin)) unique.push(origin);
+    return unique;
+}, [] as string[]);
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
-    ...(isProduction && productionBaseURL ? { baseURL: productionBaseURL } : {}),
-    ...(isProduction && productionTrustedOrigins ? { trustedOrigins: productionTrustedOrigins } : {}),
+    ...(isProduction && productionTrustedOrigins.length > 0 ? { trustedOrigins: productionTrustedOrigins } : {}),
     ...(!isProduction ? { trustedOrigins: localTrustedOrigins } : {}),
     emailAndPassword: {
         enabled: true,
